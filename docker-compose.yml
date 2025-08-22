@@ -1,0 +1,68 @@
+version: '3.9'
+
+services:
+  todo_postgres:
+    image: postgres:16-alpine
+    container_name: todo_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      todo_net:
+      
+  todo-service:
+    build: ./services/todo-service
+    env_file: ./services/todo-service/.env
+    depends_on:
+      - todo_postgres
+    networks:
+      todo_net:
+    ports:
+      - "3001:3001"
+
+
+  auth-service:
+    build: ./services/auth-service
+    env_file: ./services/auth-service/.env
+    depends_on:
+      - todo_postgres
+    networks:
+      todo_net:
+    ports:
+      - 3002:3002
+    
+  frontend:
+      build: ./frontend
+      container_name: todo_frontend
+      environment:
+        - NODE_ENV=production
+      command: "npm run start"
+      ports:
+        - "3000:3000"   # internal, nginx will connect
+      depends_on:
+        - todo-service
+        - auth-service
+      networks:
+        - todo_net 
+
+  nginx:
+    image: nginx:latest
+    container_name: todo_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - todo-service
+      - auth-service
+    networks:
+      - todo_net   
+
+networks:
+  todo_net:
+
+volumes:
+  pgdata:
