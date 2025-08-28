@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
@@ -19,6 +20,8 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.8",
     "nodemon": "^3.1.10"
   }
 }

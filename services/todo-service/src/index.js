@@ -15,7 +15,7 @@ const pool = new Pool({
 app.get('/health', (req, res) => res.send('ok'));
 
 // Get all todos
-app.get("/api/todos", async (req, res) => {
+app.get("/todos", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM todos ORDER BY id ASC");
     res.json(result.rows);
@@ -26,7 +26,7 @@ app.get("/api/todos", async (req, res) => {
 });
 
 // Get a single todo by ID
-app.get("/api/todos/:id", async (req, res) => {
+app.get("/todos/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query("SELECT * FROM todos WHERE id = $1", [id]);
@@ -41,7 +41,7 @@ app.get("/api/todos/:id", async (req, res) => {
 });
 
 // Create new todo
-app.post("/api/todos", async (req, res) => {
+app.post("/todos", async (req, res) => {
   const { title, description, status } = req.body;
   try {
     const result = await pool.query(
@@ -56,7 +56,7 @@ app.post("/api/todos", async (req, res) => {
 });
 
 // Update todo (status, title, description)
-app.put("/api/todos/:id", async (req, res) => {
+app.put("/todos/:id", async (req, res) => {
   const { id } = req.params;
   const { title, description, status } = req.body;
   try {
@@ -72,7 +72,7 @@ app.put("/api/todos/:id", async (req, res) => {
 });
 
 // Soft delete → move to Deleted column
-app.delete("/api/todos/:id", async (req, res) => {
+app.delete("/todos/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
@@ -87,7 +87,7 @@ app.delete("/api/todos/:id", async (req, res) => {
 });
 
 // Permanent delete
-app.delete("/api/todos/:id/permanent", async (req, res) => {
+app.delete("/todos/:id/permanent", async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query("DELETE FROM todos WHERE id=$1", [id]);

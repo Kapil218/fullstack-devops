@@ -9,44 +9,57 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - todo_pgdata:/var/lib/postgresql/data
     networks:
-      todo_net:
-      
+      - todo_net
+
+  auth_postgres:
+    image: postgres:16-alpine
+    container_name: auth_postgres
+    environment:
+      POSTGRES_DB: ${AUTH_POSTGRES_DB}
+      POSTGRES_USER: ${AUTH_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AUTH_POSTGRES_PASSWORD}
+    volumes:
+      - auth_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # optional, if you want to access externally
+    networks:
+      - todo_net
+
   todo-service:
     build: ./services/todo-service
     env_file: ./services/todo-service/.env
     depends_on:
       - todo_postgres
     networks:
-      todo_net:
+      - todo_net
     ports:
       - "3001:3001"
-
 
   auth-service:
     build: ./services/auth-service
     env_file: ./services/auth-service/.env
     depends_on:
-      - todo_postgres
+      - auth_postgres
     networks:
-      todo_net:
+      - todo_net
     ports:
-      - 3002:3002
-    
+      - "3002:3002"
+
   frontend:
-      build: ./frontend
-      container_name: todo_frontend
-      environment:
-        - NODE_ENV=production
-      command: "npm run start"
-      ports:
-        - "3000:3000"   # internal, nginx will connect
-      depends_on:
-        - todo-service
-        - auth-service
-      networks:
-        - todo_net 
+    build: ./frontend
+    container_name: todo_frontend
+    environment:
+      - NODE_ENV=production
+    command: "npm run start"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - todo-service
+      - auth-service
+    networks:
+      - todo_net
 
   nginx:
     image: nginx:latest
@@ -59,10 +72,11 @@ services:
       - todo-service
       - auth-service
     networks:
-      - todo_net   
+      - todo_net
 
 networks:
   todo_net:
 
 volumes:
-  pgdata:
+  todo_pgdata:
+  auth_pgdata:
